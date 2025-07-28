@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { format, startOfWeek, addDays, subDays, set, isToday, parseISO, isBefore, startOfDay, getDay, isAfter, subWeeks, isEqual } from 'date-fns';
+import { format, startOfWeek, addDays, subDays, set, isToday, parseISO, isBefore, startOfDay, getDay, isAfter, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +21,6 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-  DialogClose,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -44,7 +44,7 @@ interface Reservation {
   obs: string;
 }
 
-export default function TherapyPoolScheduler() {
+export default function WeeklySchedule() {
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Record<string, Reservation>>({});
@@ -66,7 +66,9 @@ export default function TherapyPoolScheduler() {
 
 
   useEffect(() => {
+    // Set the current date only on the client side to avoid hydration errors
     setCurrentDate(new Date());
+
     // Load reservations from localStorage on initial render
     try {
       const savedReservations = localStorage.getItem('reservations');
@@ -95,20 +97,16 @@ export default function TherapyPoolScheduler() {
   
   // Save reservations to localStorage whenever they change
   useEffect(() => {
-    if (Object.keys(reservations).length > 0) {
-      localStorage.setItem('reservations', JSON.stringify(reservations));
-    } else {
-      localStorage.removeItem('reservations');
+    if(currentDate) { // Only run after initial client-side mount
+        localStorage.setItem('reservations', JSON.stringify(reservations));
     }
-  }, [reservations]);
+  }, [reservations, currentDate]);
   
   useEffect(() => {
-    if (holidays.length > 0) {
+    if(currentDate) { // Only run after initial client-side mount
         localStorage.setItem('holidays', JSON.stringify(holidays));
-    } else {
-        localStorage.removeItem('holidays');
     }
-  }, [holidays]);
+  }, [holidays, currentDate]);
 
 
   if (!currentDate) {
@@ -549,3 +547,4 @@ export default function TherapyPoolScheduler() {
     </main>
   );
 }
+
